@@ -1,15 +1,22 @@
-version: 2.1
-orbs:
-  ruby: circleci/ruby@0.1.2
-
+version: 2
 jobs:
-  build:
-    docker:
-      - image: circleci/ruby:2.6.3-stretch-node
-    executor: ruby/default
+  test:
+    machine:
+      image: circleci/classic:edge
     steps:
       - checkout
       - run:
-          name: Which bundler?
-          command: bundle -v
-      - ruby/bundle-install
+          name: docker-compose up --build -d
+          command: docker-compose build
+      - run:
+          name: sleep for waiting launch db
+          command: sleep 10
+      - run:
+          name: rails db:create and db:migrate
+          command: docker-compose exec --env 'RAILS_ENV=test' web rails db:create db:migrate
+      - run:
+          name: test #将来的にはrspec
+          command: docker-compose exec --env 'RAILS_ENV=test' web bundle exec test
+      - run:
+          name: docker-compose down
+          command: docker-compose down
