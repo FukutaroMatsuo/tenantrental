@@ -11,9 +11,9 @@ jobs:
       - run:
           name: sleep for waiting launch db
           command: sleep 10
-      - run:
-          name: rails db:create
-          command: docker-compose exec --env 'RAILS_ENV=test' web rails db:create
+      # - run:
+      #     name: rails db:create
+      #     command: docker-compose exec --env 'RAILS_ENV=test' web rails db:create
       - run:
           name: rails db:migrate
           command: docker-compose exec --env 'RAILS_ENV=test' web rails db:migrate
