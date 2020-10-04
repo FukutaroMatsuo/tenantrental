@@ -20,8 +20,8 @@ jobs:
       - run:
           name: docker-compose down
           command: docker-compose down
-
   deploy:
+    working_directory: ~/deploy
     machine:
       image: circleci/classic:edge
     steps:
@@ -30,32 +30,31 @@ jobs:
           name: "build docker image"
           command: docker build --rm=false -t registry.heroku.com/${HEROKU_APP_NAME}/web -f Dockerfile.prod .
       - run:
-          name: setup heroku command
+          name: Setup Heroku command
           command: bash .circleci/setup_heroku.sh
       - run:
-          name: heroku maintenance on
+          name: Execute Heroku maintenance on
           command: heroku maintenance:on --app ${HEROKU_APP_NAME}
       - run:
-          name: "push container to registry.heroku.com"
+          name: Push container to registry.heroku.com
           command: |
             docker login --username=_ --password=$HEROKU_AUTH_TOKEN registry.heroku.com
             docker push registry.heroku.com/${HEROKU_APP_NAME}/web
-            # bash .circleci/heroku-container-release.sh
       - run:
-          name: heroku db migrate
+          name: Execute Heroku db migrate
           command: heroku run rails db:migrate --app ${HEROKU_APP_NAME}
       - run:
-          name: heroku maintenance off
+          name: Execut Heroku maintenance off
           command: heroku maintenance:off --app ${HEROKU_APP_NAME}
 
 workflows:
   version: 2
-  build_and_deploy:
+  test-deploy:
     jobs:
-      - build
+      - test
       - deploy:
           requires:
-            - build
+            - test
           filters:
             branches:
               only: master

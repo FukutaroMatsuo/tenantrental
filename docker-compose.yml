@@ -9,7 +9,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ".:/tenantrental"
+      - .:/tenantrental
     environment:
       - "DATABASE_PASSWORD=postgres"
       - "SELENIUM_DRIVER_URL=http://selenium_chrome:4444/wd/hub"
