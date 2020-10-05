@@ -21,31 +21,50 @@ jobs:
           name: docker-compose down
           command: docker-compose down
   deploy:
-    working_directory: ~/deploy
     machine:
       image: circleci/classic:edge
     steps:
       - checkout
       - run:
+          name: docker-compose up --build -d
+          command: docker-compose up --build -d
+      - run:
+          name: docker login
+          command: docker login -u "$HEROKU_USERNAME" -p "$HEROKU_API_KEY" registry.heroku.com
+      - run:
           name: "build docker image"
-          command: docker build --rm=false -t registry.heroku.com/${HEROKU_APP_NAME}/web -f Dockerfile.prod .
+          command: docker build -t registry.heroku.com/$HEROKU_APP_NAME/web -f Dockerfile.prod .
       - run:
-          name: Setup Heroku command
-          command: bash .circleci/setup_heroku.sh
+          name: "push docker image"
+          command: docker push registry.heroku.com/$HEROKU_APP_NAME/web
       - run:
-          name: Execute Heroku maintenance on
-          command: heroku maintenance:on --app ${HEROKU_APP_NAME}
-      - run:
-          name: Push container to registry.heroku.com
-          command: |
-            docker login --username=_ --password=$HEROKU_AUTH_TOKEN registry.heroku.com
-            docker push registry.heroku.com/${HEROKU_APP_NAME}/web
-      - run:
-          name: Execute Heroku db migrate
-          command: heroku run rails db:migrate --app ${HEROKU_APP_NAME}
-      - run:
-          name: Execut Heroku maintenance off
-          command: heroku maintenance:off --app ${HEROKU_APP_NAME}
+          name: "heroku db migrate"
+          command: heroku run --app $HEROKU_APP_NAME rails db:migrate
+  # deploy:
+  #   machine:
+  #     image: circleci/classic:edge
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: "build docker image"
+  #         command: docker build --rm=false -t registry.heroku.com/${HEROKU_APP_NAME}/web -f Dockerfile.prod .
+  #     - run:
+  #         name: Setup Heroku command
+  #         command: bash .circleci/setup_heroku.sh
+  #     - run:
+  #         name: Execute Heroku maintenance on
+  #         command: heroku maintenance:on --app ${HEROKU_APP_NAME}
+  #     - run:
+  #         name: Push container to registry.heroku.com
+  #         command: |
+  #           docker login --username=_ --password=$HEROKU_AUTH_TOKEN registry.heroku.com
+  #           docker push registry.heroku.com/${HEROKU_APP_NAME}/web
+  #     - run:
+  #         name: Execute Heroku db migrate
+  #         command: heroku run rails db:migrate --app ${HEROKU_APP_NAME}
+  #     - run:
+  #         name: Execut Heroku maintenance off
+  #         command: heroku maintenance:off --app ${HEROKU_APP_NAME}
 
 workflows:
   version: 2
