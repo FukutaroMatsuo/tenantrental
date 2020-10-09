@@ -13,6 +13,6 @@ WORKDIR ${APP_ROOT}
 COPY Gemfile Gemfile.lock ${APP_ROOT}/
 RUN bundle install
 
-COPY . ${APP_ROOT}
-EXPOSE 3000
-CMD ["rails", "s", "-b", "0.0.0.0"]
+# COPY . ${APP_ROOT}
+# EXPOSE 3000
+# CMD ["rails", "s", "-b", "0.0.0.0"]
